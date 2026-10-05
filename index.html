@@ -5,15 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>A Letter For You</title>
     
-    <!-- Importing the Caveat font for the handwritten look -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;500;600;700&display=swap" rel="stylesheet">
     
     <style>
         :root {
-            --ink-color: #2b231c;
-            --paper-color: #eaddc5;
+            --ink-color: #3b2f25; 
+            --paper-color: #eaddc5; 
             --glow-color: #ffaa00;
         }
 
@@ -22,37 +21,46 @@
             padding: 0;
             width: 100%;
             height: 100%;
-            background-color: #111; /* Dark background behind the paper */
-            font-family: "CK Jot", "Caveat", cursive, sans-serif;
+            background-color: #0a0a0a; 
+            font-family: "Caveat", cursive, sans-serif;
             overflow-x: hidden;
             scroll-behavior: smooth;
         }
 
-        /* The container acting as the physical piece of old paper */
         .letter-container {
             position: relative;
             max-width: 800px;
             width: 90%;
             min-height: 100vh;
             margin: 40px auto;
-            padding: 60px 40px;
+            padding: 60px 50px;
+            
             background-color: var(--paper-color);
             background-image: 
-                /* Subtle texture for the old paper */
-                radial-gradient(circle at 50% 50%, rgba(0,0,0,0) 0%, rgba(0,0,0,0.05) 100%),
-                linear-gradient(to right, rgba(255,255,255,0.2), rgba(0,0,0,0.05));
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
-            border-radius: 4px;
+                radial-gradient(ellipse at center, transparent 50%, rgba(90, 60, 30, 0.4) 100%),
+                radial-gradient(circle at 10% 15%, rgba(139, 90, 43, 0.15) 0%, transparent 25%),
+                radial-gradient(circle at 85% 90%, rgba(139, 90, 43, 0.12) 0%, transparent 30%),
+                linear-gradient(to right, transparent 48%, rgba(0,0,0,0.04) 50%, transparent 52%),
+                linear-gradient(to bottom, transparent 30%, rgba(0,0,0,0.03) 31%, transparent 33%),
+                url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.08'/%3E%3C/svg%3E");
+            
+            box-shadow: 
+                0 15px 40px rgba(0, 0, 0, 0.9),
+                inset 0 0 50px rgba(100, 50, 15, 0.4),
+                inset 0 0 15px rgba(60, 30, 10, 0.6);
+            
+            border-radius: 2px 4px 3px 5px / 5px 3px 4px 2px;
             color: var(--ink-color);
-            font-size: 26px;
-            line-height: 1.6;
+            font-size: 28px;
+            line-height: 1.5;
             box-sizing: border-box;
             z-index: 1;
+            text-shadow: 0px 0px 1px rgba(59, 47, 37, 0.4);
         }
 
         @media (max-width: 600px) {
             .letter-container {
-                padding: 40px 20px;
+                padding: 40px 25px;
                 font-size: 24px;
                 margin: 20px auto;
             }
@@ -60,15 +68,16 @@
 
         p {
             margin-bottom: 24px;
+            letter-spacing: 0.5px;
         }
 
         .signature {
-            margin-top: 40px;
+            margin-top: 50px;
             text-align: right;
             padding-right: 40px;
+            font-size: 32px;
         }
 
-        /* The dark layer simulating the unlit room */
         #darkness-overlay {
             position: fixed;
             top: 0;
@@ -76,51 +85,53 @@
             width: 100%;
             height: 100%;
             z-index: 10;
-            pointer-events: none; /* Let clicks pass through to the text below */
+            pointer-events: none; 
             
-            /* Initial position in the center, will be overridden by JS */
             --x: 50vw;
             --y: 50vh;
+            /* New variables for the flicker effect */
+            --radius: 180px;
+            --jitter-x: 0px;
+            --jitter-y: 0px;
             
-            /* The radial gradient acts as the flashlight/candle lighting up the paper */
+            /* Added warm orange/brown tints to simulate firelight */
             background: radial-gradient(
-                circle 180px at var(--x) var(--y), 
-                transparent 0%, 
-                rgba(0,0,0,0.85) 40%, 
-                rgba(0,0,0,0.98) 80%,
-                rgba(0,0,0,0.98) 100%
+                circle var(--radius) at calc(var(--x) + var(--jitter-x)) calc(var(--y) + var(--jitter-y)), 
+                rgba(255, 170, 50, 0.05) 0%,   /* Inner warm glow */
+                rgba(255, 100, 20, 0.15) 20%,  /* Orange halo */
+                rgba(40, 20, 10, 0.88) 45%,    /* Warm dark edge transition */
+                rgba(5, 5, 5, 0.98) 75%,       /* Deep darkness */
+                rgba(0, 0, 0, 1) 100%
             );
             
-            transition: opacity 3s ease-in-out;
+            /* Removed the slow opacity transition so the rapid flicker isn't smoothed out */
+            transition: opacity 3s ease-in-out; 
         }
 
-        /* Class applied when the glowing text is clicked */
         #darkness-overlay.illuminated {
             opacity: 0;
         }
 
-        /* The glowing, interactive phrase */
         .magic-word {
             position: relative;
-            z-index: 20; /* Keep it above the darkness overlay so it stands out */
-            color: #ffe6a0;
+            z-index: 20; 
+            color: #ffeba8;
             text-shadow: 
                 0 0 5px var(--glow-color), 
                 0 0 15px #ff7700, 
-                0 0 25px #ff4500;
+                0 0 25px #ff4500,
+                0 0 40px #ff0000;
             cursor: pointer;
             font-weight: 600;
             transition: color 3s ease, text-shadow 3s ease;
         }
 
-        /* Class applied to smoothly transition the text back to normal ink */
         .magic-word.normal-ink {
             color: var(--ink-color);
-            text-shadow: none;
+            text-shadow: 0px 0px 1px rgba(59, 47, 37, 0.4); 
             font-weight: 400;
             cursor: auto;
         }
-
     </style>
 </head>
 <body>
@@ -153,47 +164,48 @@
         const glowingText = document.getElementById('glowing-text');
         let isIlluminated = false;
 
-        // Function to update the coordinates of the "candle" light
         function updateCandlePosition(e) {
-            // Stop updating the candle once the room is illuminated
             if (isIlluminated) return;
 
             let x, y;
             
-            // Handle touch events
             if (e.touches && e.touches.length > 0) {
                 x = e.touches[0].clientX;
                 y = e.touches[0].clientY;
-            } 
-            // Handle mouse events
-            else {
+            } else {
                 x = e.clientX;
                 y = e.clientY;
             }
 
-            // Update the custom CSS variables to move the radial-gradient
             overlay.style.setProperty('--x', `${x}px`);
             overlay.style.setProperty('--y', `${y}px`);
         }
 
-        // Listeners for cursor and touch movements
         window.addEventListener('mousemove', updateCandlePosition);
         window.addEventListener('touchmove', updateCandlePosition, { passive: true });
 
-        // Logic to illuminate the room when the glowing text is clicked
+        // NEW: Candle flicker effect
+        // Rapidly updates the size and exact center of the light to simulate fire
+        setInterval(() => {
+            if (!isIlluminated) {
+                // Randomize radius between 170px and 185px
+                const newRadius = 170 + Math.random() * 15;
+                overlay.style.setProperty('--radius', `${newRadius}px`);
+                
+                // Randomly shift the light center by a few pixels for a dancing flame effect
+                overlay.style.setProperty('--jitter-x', `${Math.random() * 8 - 4}px`);
+                overlay.style.setProperty('--jitter-y', `${Math.random() * 8 - 4}px`);
+            }
+        }, 90); // Updates every 90 milliseconds
+
         glowingText.addEventListener('click', function() {
             if (!isIlluminated) {
                 isIlluminated = true;
-                
-                // Fade out the darkness overlay
                 overlay.classList.add('illuminated');
-                
-                // Remove the glow and return the text to standard ink
                 glowingText.classList.add('normal-ink');
             }
         });
 
-        // Initialize the light at the center of the screen on load
         window.onload = () => {
             overlay.style.setProperty('--x', `${window.innerWidth / 2}px`);
             overlay.style.setProperty('--y', `${window.innerHeight / 2}px`);
